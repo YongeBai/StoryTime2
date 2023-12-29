@@ -5,22 +5,22 @@ from ebooklib import epub
 import re
 
 
-def epub2html(path: str) -> list:
-    book = ebooklib.epub.read_epub(path)
-    chapters = []
-    nav = None
-    for item in book.get_items():
-        if item.get_type() == ebooklib.ITEM_DOCUMENT:
-            chapters.append(item.get_content())
-        if item.get_type() == ebooklib.ITEM_NAVIGATION:
-            nav = item.get_content()
+# def epub2html(path: str) -> list:
+#     book = ebooklib.epub.read_epub(path)
+#     chapters = []
+#     nav = None
+#     for item in book.get_items():
+#         if item.get_type() == ebooklib.ITEM_DOCUMENT:
+#             chapters.append(item.get_content())
+#         if item.get_type() == ebooklib.ITEM_NAVIGATION:
+#             nav = item.get_content()
 
-    return nav
+#     return nav
 
 
-def html2text(html: str) -> str:
-    soup = BeautifulSoup(html, "html.parser")
-    return soup.get_text()
+# def html2text(html: str) -> str:
+#     soup = BeautifulSoup(html, "html.parser")
+#     return soup.get_text()
 
 
 def get_book_dir(path: str) -> str:
@@ -79,7 +79,7 @@ def extract_chapters(path: str):
     book = ebooklib.epub.read_epub(path)
     nav = get_epub_navigation(path)
     chapters = parse_navigation(nav)
-    book_dir = get_book_dir(path)
+    book_dir = os.path.dirname(path)
 
     for chapter_name, chapter_content_xhtml in chapters:
         text = extract_chapter_html(chapter_content_xhtml, book)

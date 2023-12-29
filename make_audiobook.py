@@ -1,5 +1,4 @@
 import os
-import importlib
 import torch
 
 from utils import process_metadata
@@ -7,7 +6,7 @@ from utils import process_metadata
 
 BOOK_TITLE = "Example"
 AUTHOR = "Example"
-PATH_TO_TXT_FILES = os.path.join(os.getcwd(), "books", BOOK_TITLE, "book_txt")
+PATH_TO_TXT_FILES = os.path.join(os.getcwd(), "books", BOOK_TITLE, "chapters_text")
 
 
 def main():
@@ -31,8 +30,7 @@ def main():
         chapter_num += 1
 
 
-if __name__ == "__main__":     
+if __name__ == "__main__":
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    
 
     main()
