@@ -1,0 +1,9 @@
+beautifulsoup4==4.12.2
+bs4==0.0.1
+EbookLib==0.18
+music-tag==0.4.3
+mutagen==1.47.0
+torch==2.1.2+cu118
+torchaudio==2.1.2+cu118
+transformers==4.36.2
+TTS==0.22.0
