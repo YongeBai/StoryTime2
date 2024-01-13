@@ -64,7 +64,7 @@ def extract_chapters(path: str):
             f.write(chapter_name + "\n")
             f.write(text)
 
-    print("Done")
+    print("Done Extracting Chapters")
 
 
 def main():
@@ -82,10 +82,9 @@ def main():
 
     if not os.path.exists(book_path_folder):
         os.makedirs(book_path_folder)
-    
+
     book_path = os.path.join(book_path_folder, book_file)
-    shutil.move(book_file, book_path)
-    
+
     extract_chapters(book_path)
 
 

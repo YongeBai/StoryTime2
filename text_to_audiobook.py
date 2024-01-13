@@ -13,7 +13,7 @@ tts = TTS("tts_models/multilingual/multi-dataset/xtts_v2", gpu=cuda)
 # tts.to(device)
 
 
-def clean_text(text: str, target_len: int = 200, max_len: int = 300) -> list[str]:
+def clean_text(text: str, target_len: int = 200, max_len: int = 250) -> list[str]:
     # remove double new line, redundant whitespace, convert non-ascii quotes to ascii quotes
     text = re.sub(r"\n\n+", r"\n", text)
     text = re.sub(r"\s+", r" ", text)
@@ -43,7 +43,27 @@ def clean_text(text: str, target_len: int = 200, max_len: int = 300) -> list[str
     return chunks
 
 
-def process_metadata(file_path: str, book_title: str, chapter_no: int, author: str):
+def read_chapter(text_path: str, audio_path: str, voice_prompt_file: str) -> str:
+    with open(text_path, "r", encoding="utf-8") as f:
+        text = " ".join([l for l in f.readlines()][:100])
+
+        cleaned_text = clean_text(text)
+
+        all_audio = []
+        for text in cleaned_text:
+            audio = tts.tts(
+                text=text,
+                language="en",
+                speaker_wav=voice_prompt_file,
+                split_sentences=False,
+            )
+            all_audio.append(audio)
+
+        full_audio = torch.cat(all_audio, dim=-1)
+        torchaudio.save(f"{audio_path}.wav", full_audio)
+
+
+def process_metadata(file_path: str, book_title: str, chapter_no: int):
     audio = music_tag.load_file(file_path)
 
     audio["album"] = book_title
@@ -56,36 +76,25 @@ def process_metadata(file_path: str, book_title: str, chapter_no: int, author: s
 
 def main(voice_prompt_file: str):
     chapter_num = 1
-    files = os.listdir(PATH_TO_TXT_FILES)
+    files = os.listdir(path_to_text_files)
     files.sort(
         key=lambda file_name: os.path.getmtime(
-            os.path.join(PATH_TO_TXT_FILES, file_name)
+            os.path.join(path_to_text_files, file_name)
         )
     )
 
     for file in files[:1]:
-        text_path = os.path.join(PATH_TO_TXT_FILES, file)
-        audio_path = os.path.join(PATH_TO_AUDIO_FILES, file)
+        text_path = os.path.join(path_to_text_files, file)
+        audio_path = os.path.join(path_to_audio_files, file)
 
         # read chapter
-        with open(text_path, "r", encoding="utf-8") as f:
-            text = " ".join([l for l in f.readlines()])
-            # cleaned_text = clean_text(text)
-            #decide between using ur clean text or pySDB's with split=True
-
-            tts.tts_to_file(
-                text=text,
-                file_path=audio_path,
-                speaker_wav=voice_prompt_file,
-                language="en",
-                split_sentences=True,
-            )
+        read_chapter(text_path, audio_path, voice_prompt_file)
 
         # rvc
 
         # process metadata
-        # process_metadata(full_path, BOOK_TITLE, chapter_num, AUTHOR)
-        # chapter_num += 1
+        # process_metadata(full_path, BOOK_TITLE, chapter_num)
+        chapter_num += 1
 
 
 if __name__ == "__main__":
@@ -96,15 +105,15 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    BOOK_TITLE = args.title
+    book_title = args.title
     # AUTHOR = args.author
-    VOICE = args.narrator
+    voice = args.voice
 
-    PATH_TO_TXT_FILES = os.path.join(os.getcwd(), "books", BOOK_TITLE, "chapters_text")
-    PATH_TO_AUDIO_FILES = os.path.join(
-        os.getcwd(), "books", BOOK_TITLE, "chapters_audio"
+    path_to_text_files = os.path.join(os.getcwd(), "books", book_title, "chapters_text")
+    path_to_audio_files = os.path.join(
+        os.getcwd(), "books", book_title, "chapters_audio"
     )
-    PATH_TO_VOICES = os.path.join(os.getcwd(), "voices")
-    voice_prompt_file = os.path.join(PATH_TO_VOICES, f"{VOICE}.wav")
+    path_to_voices = os.path.join(os.getcwd(), "voices")
+    voice_prompt_file = os.path.join(path_to_voices, f"{voice}.wav")
 
     main(voice_prompt_file)
