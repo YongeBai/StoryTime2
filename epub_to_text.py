@@ -1,6 +1,7 @@
 import argparse
 import os
 import re
+import shutil
 
 import ebooklib
 from bs4 import BeautifulSoup
@@ -72,10 +73,19 @@ def main():
     args = parser.parse_args()
 
     book_title = args.title
-    book_path = os.path.join(os.getcwd(), "books", book_title, f"{book_title}.epub")
-    if not os.path.exists(book_path):
-        os.makedirs(book_path)
+    book_file = f"{book_title}.epub"
+    book_path_folder = os.path.join(
+        os.getcwd(),
+        "books",
+        book_title,
+    )
 
+    if not os.path.exists(book_path_folder):
+        os.makedirs(book_path_folder)
+    
+    book_path = os.path.join(book_path_folder, book_file)
+    shutil.move(book_file, book_path)
+    
     extract_chapters(book_path)
 
 
