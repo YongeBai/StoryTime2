@@ -48,17 +48,19 @@ def extract_chapter_html(chapter_xhtml: str, book: epub.EpubBook) -> str:
     return text
 
 
-def extract_chapters(path: str):
-    book = ebooklib.epub.read_epub(path)
-    nav = get_epub_navigation(path)
+def extract_chapters(book_path_folder, book_path):
+    book = ebooklib.epub.read_epub(book_path)
+    nav = get_epub_navigation(book_path)
     chapters = parse_navigation(nav)
-    book_dir = os.path.dirname(path)
+
+    os.makedirs(f"{book_path_folder}/chapters_text", exist_ok=True)
 
     for chapter_name, chapter_content_xhtml in chapters:
         text = extract_chapter_html(chapter_content_xhtml, book)
 
-        os.makedirs(f"{book_dir}/chapters_text", exist_ok=True)
-        file_name = f"{book_dir}/chapters_text/{chapter_name}.txt"
+        if chapter_name[-1] == ".":  # remove trailing period
+            chapter_name = chapter_name[:-1]
+        file_name = f"{book_path_folder}/chapters_text/{chapter_name}.txt"
 
         with open(file_name, "w") as f:
             f.write(chapter_name + "\n")
@@ -73,19 +75,17 @@ def main():
     args = parser.parse_args()
 
     book_title = args.title
-    book_file = f"{book_title}.epub"
     book_path_folder = os.path.join(
         os.getcwd(),
         "books",
         book_title,
     )
-
     if not os.path.exists(book_path_folder):
         os.makedirs(book_path_folder)
 
-    book_path = os.path.join(book_path_folder, book_file)
+    book_path = os.path.join(book_path_folder, f"{book_title}.epub")
 
-    extract_chapters(book_path)
+    extract_chapters(book_path_folder, book_path)
 
 
 if __name__ == "__main__":
