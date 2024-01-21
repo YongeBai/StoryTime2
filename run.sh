@@ -15,7 +15,7 @@ fi
 
 voice="$3"
 
-python3 epub_to_text.py "$title"
+python3 epub_to_text.py --title "$title"
 python3 text_to_audiobook.py --title "$title" --author "$author" --voice "$voice"
 
 deactivate

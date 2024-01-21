@@ -54,20 +54,23 @@ def extract_chapters(book_path_folder, book_path):
     chapters = parse_navigation(nav)
 
     # create folder for chapters text
-    os.makedirs(f"{book_path_folder}/chapters_text", exist_ok=True)
+    if not os.path.exists(f"{book_path_folder}/chapters_text"):
+        os.makedirs(f"{book_path_folder}/chapters_text")
 
-    for chapter_name, chapter_content_xhtml in chapters:
-        text = extract_chapter_html(chapter_content_xhtml, book)
+        for chapter_name, chapter_content_xhtml in chapters:
+            text = extract_chapter_html(chapter_content_xhtml, book)
 
-        if chapter_name[-1] == ".":  # remove trailing period if exists in chapter name
-            chapter_name = chapter_name[:-1]
-        file_name = f"{book_path_folder}/chapters_text/{chapter_name}.txt"
+            if chapter_name[-1] == ".":  # remove trailing period if exists in chapter name
+                chapter_name = chapter_name[:-1]
+            file_name = f"{book_path_folder}/chapters_text/{chapter_name}.txt"
 
-        with open(file_name, "w", encoding="utf-8") as f:
-            f.write(chapter_name + "\n")
-            f.write(text)
+            with open(file_name, "w", encoding="utf-8") as f:
+                f.write(chapter_name + "\n")
+                f.write(text)
 
-    print("Done Extracting Chapters")
+        print("Done Extracting Chapters")
+    else:
+        print("Chapters already extracted")
 
 
 def main():
@@ -85,8 +88,7 @@ def main():
     )
     if not os.path.exists(book_path_folder):
         os.makedirs(book_path_folder)
-
-    shutil.move(epub_path, book_path_folder)
+        shutil.move(epub_path, book_path_folder)
 
     book_path = os.path.join(book_path_folder, epub_path)
 
