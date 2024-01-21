@@ -12,8 +12,9 @@ import rvc_infer
 
 cuda = torch.cuda.is_available()
 device = torch.device("cuda" if cuda else "cpu")
-tts = TTS("tts_models/multilingual/multi-dataset/xtts_v2", gpu=cuda)
-# tts.to(device)
+# tts = TTS("tts_models/multilingual/multi-dataset/xtts_v2", gpu=cuda)
+tts = TTS("tts_models/multilingual/multi-dataset/xtts_v2")
+tts.to(device)
 
 
 def clean_text(text: str, target_len: int = 200) -> list[str]:
@@ -68,7 +69,7 @@ def read_chapter(text_path: str, audio_path: str, voice_prompt_file: str):
     for audio in all_audio[1:]:
         combined_audio += audio
 
-    combined_audio.export(audio_path, format="wav")
+    combined_audio.export(audio_path, format="mp3")
 
     for i in range(len(all_audio)):
         os.remove(f"{i}.wav")
@@ -118,7 +119,7 @@ def main(
         )
 
         # process metadata
-        process_metadata(audio_path, book_title, chapter_num)
+        process_metadata(audio_path, book_title, chapter_num)        
 
         print(f"Done Processing Chapter {chapter_name}")
         chapter_num += 1
