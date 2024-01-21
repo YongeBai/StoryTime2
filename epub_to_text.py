@@ -52,16 +52,17 @@ def extract_chapters(book_path_folder, book_path):
     nav = get_epub_navigation(book_path)
     chapters = parse_navigation(nav)
 
+    # create folder for chapters text
     os.makedirs(f"{book_path_folder}/chapters_text", exist_ok=True)
 
     for chapter_name, chapter_content_xhtml in chapters:
         text = extract_chapter_html(chapter_content_xhtml, book)
 
-        if chapter_name[-1] == ".":  # remove trailing period
+        if chapter_name[-1] == ".":  # remove trailing period if exists in chapter name
             chapter_name = chapter_name[:-1]
         file_name = f"{book_path_folder}/chapters_text/{chapter_name}.txt"
 
-        with open(file_name, "w") as f:
+        with open(file_name, "w", encoding="utf-8") as f:
             f.write(chapter_name + "\n")
             f.write(text)
 

@@ -8,6 +8,7 @@ import numpy as np
 import torch
 import pydub
 from TTS.api import TTS
+import rvc_infer
 
 cuda = torch.cuda.is_available()
 device = torch.device("cuda" if cuda else "cpu")
@@ -52,7 +53,7 @@ def read_chapter(text_path: str, audio_path: str, voice_prompt_file: str):
 
         all_audio = []
         for i, text in enumerate(cleaned_text):
-            # no clue how to combine the raw ints into one file properly, its making the voice higher pitch when im just using scipy to combine them    
+            # no clue how to combine the raw ints into one file properly, its making the voice higher pitch when im just using scipy to combine them
             # hacky solution is to save each chunk as a separate file and then combine them
             tts.tts_to_file(
                 text=text,
@@ -84,7 +85,13 @@ def process_metadata(audio_path: str, book_title: str, chapter_no: int):
     audio.save()
 
 
-def main(book_title: str, path_to_text_files: str, path_to_audio_files, voice_prompt_file: str):
+def main(
+    book_title: str,
+    path_to_text_files: str,
+    path_to_audio_files,
+    voice_prompt_file: str,
+    model_path: str,
+):
     chapter_num = 1
     files = os.listdir(path_to_text_files)
     files.sort(
@@ -103,7 +110,12 @@ def main(book_title: str, path_to_text_files: str, path_to_audio_files, voice_pr
         # read chapter
         read_chapter(text_path, audio_path, voice_prompt_file)
 
-        # rvc
+        # rvc audio
+        rvc_infer.rvc_convert(
+            model_path=model_path,
+            input_path=audio_path,
+            output_dir_path=audio_path,
+        )
 
         # process metadata
         process_metadata(audio_path, book_title, chapter_num)
@@ -121,7 +133,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     book_title = args.title
-    # AUTHOR = args.author
+    # author = args.author
     voice = args.voice
 
     path_to_text_files = os.path.join(os.getcwd(), "books", book_title, "chapters_text")
@@ -133,5 +145,12 @@ if __name__ == "__main__":
 
     path_to_voices = os.path.join(os.getcwd(), "voices")
     voice_prompt_file = os.path.join(path_to_voices, f"{voice}.wav")
+    model_path = os.path.join(path_to_voices, f"{voice}.pth")
 
-    main(book_title, path_to_text_files, path_to_audio_files, voice_prompt_file)
+    main(
+        book_title,
+        path_to_text_files,
+        path_to_audio_files,
+        voice_prompt_file,
+        model_path,
+    )
