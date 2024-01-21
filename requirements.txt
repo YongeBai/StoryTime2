@@ -6,3 +6,4 @@ mutagen==1.47.0
 torch
 torchaudio
 TTS==0.22.0
+pydub

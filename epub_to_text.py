@@ -1,7 +1,6 @@
 import argparse
 import os
 import re
-import shutil
 
 import ebooklib
 from bs4 import BeautifulSoup

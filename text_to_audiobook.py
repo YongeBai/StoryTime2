@@ -51,7 +51,7 @@ def read_chapter(text_path: str, audio_path: str, voice_prompt_file: str):
         cleaned_text = clean_text(text)
 
         all_audio = []
-        for i, text in enumerate(cleaned_text[:2]):
+        for i, text in enumerate(cleaned_text):
             # no clue how to combine the raw ints into one file properly, its making the voice higher pitch when im just using scipy to combine them    
             # hacky solution is to save each chunk as a separate file and then combine them
             tts.tts_to_file(
