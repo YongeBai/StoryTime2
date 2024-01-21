@@ -125,6 +125,7 @@ def main(
 
 
 if __name__ == "__main__":
+    print("HERE")
     parser = argparse.ArgumentParser()
     parser.add_argument("--title", type=str, required=True, default=None)
     # parser.add_argument("--author", type=str, default=None)

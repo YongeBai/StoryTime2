@@ -7,3 +7,7 @@ torch
 torchaudio
 TTS==0.22.0
 pydub
+librosa>=0.10.0
+numba>=0.57.0
+numpy==1.22.0
+scipy>=1.11.2
