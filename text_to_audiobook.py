@@ -12,14 +12,13 @@ import rvc_infer
 
 cuda = torch.cuda.is_available()
 device = torch.device("cuda" if cuda else "cpu")
-# tts = TTS("tts_models/multilingual/multi-dataset/xtts_v2", gpu=cuda)
 tts = TTS("tts_models/multilingual/multi-dataset/xtts_v2")
 tts.to(device)
 
 
 def clean_text(text: str, target_len: int = 200) -> list[str]:
     # remove double new line, redundant whitespace, convert non-ascii quotes to ascii quotes
-    text = re.sub(r"\n\n+", r"\n", text)
+    text = re.sub(r"\n\n+", r"\n,", text)
     text = re.sub(r"\s+", r" ", text)
     text = re.sub(r"[“”]", '"', text)
 
@@ -53,7 +52,7 @@ def read_chapter(text_path: str, audio_path: str, voice_prompt_file: str):
         cleaned_text = clean_text(text)
 
         all_audio = []
-        for i, text in enumerate(cleaned_text[:3]):
+        for i, text in enumerate(cleaned_text):
             # no clue how to combine the raw ints into one file properly, its making the voice higher pitch when im just using scipy to combine them
             # hacky solution is to save each chunk as a separate file and then combine them
             tts.tts_to_file(
@@ -69,8 +68,12 @@ def read_chapter(text_path: str, audio_path: str, voice_prompt_file: str):
     for audio in all_audio[1:]:
         combined_audio += audio
 
-    combined_audio.export(audio_path, format="mp3")
+    combined_audio.export(audio_path, format="wav")
 
+    chapter_as_mp3 = audio_path[:-4] + ".mp3"
+    combined_audio.export(chapter_as_mp3, format="mp3")
+
+    os.remove(audio_path)
     for i in range(len(all_audio)):
         os.remove(f"{i}.wav")
 
@@ -101,7 +104,7 @@ def main(
         )
     )
 
-    for file in files[:3]:
+    for file in files:
         chapter_name_ext = os.path.basename(file)
         chapter_name = os.path.splitext(chapter_name_ext)[0]
 
@@ -112,14 +115,15 @@ def main(
         read_chapter(text_path, audio_path, voice_prompt_file)
 
         # rvc audio
+        mp3_path = audio_path[:-4] + ".mp3"
         rvc_infer.rvc_convert(
             model_path=model_path,
             input_path=audio_path,
-            output_dir_path=audio_path,
+            output_dir_path=mp3_path,
         )
 
         # process metadata
-        process_metadata(audio_path, book_title, chapter_num)        
+        process_metadata(mp3_path, book_title, chapter_num)
 
         print(f"Done Processing Chapter {chapter_name}")
         chapter_num += 1
