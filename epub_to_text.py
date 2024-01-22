@@ -62,7 +62,8 @@ def extract_chapters(book_path_folder, book_path):
 
             if chapter_name[-1] == ".":  # remove trailing period if exists in chapter name
                 chapter_name = chapter_name[:-1]
-            file_name = f"{book_path_folder}/chapters_text/{chapter_name}.txt"
+
+            file_name = os.path.join(book_path_folder,"chapters_text",f"{chapter_name}.txt")
 
             with open(file_name, "w", encoding="utf-8") as f:
                 f.write(chapter_name + "\n")
@@ -79,7 +80,7 @@ def main():
     args = parser.parse_args()
 
     book_title = args.title
-    epub_path = f"./{book_title}.epub"
+    epub_path = os.path.join(os.getcwd(), f"{book_title}.epub")
 
     book_path_folder = os.path.join(
         os.getcwd(),

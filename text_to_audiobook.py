@@ -17,7 +17,7 @@ tts = TTS("tts_models/multilingual/multi-dataset/xtts_v2")
 tts.to(device)
 
 
-def clean_text(text: str, target_len: int = 200) -> list[str]:
+def clean_text(text: str, target_len: int = 150) -> list[str]:
     # remove double new line, redundant whitespace, convert non-ascii quotes to ascii quotes
     text = re.sub(r"\n\n+", r"\n,", text)
     text = re.sub(r"\s+", r" ", text)
@@ -25,7 +25,9 @@ def clean_text(text: str, target_len: int = 200) -> list[str]:
 
     # split text into sentences, keep quotes together
     # sentences = re.split(r'(?<=[.!?;:—])\s+(?=(?:[^"]*"[^"]*")*[^"]*$)', text)
-    sentences = re.split(r"(?<=[.!?;:—])", text)
+
+    # just split on punctuation
+    sentences = re.split(r"(?<=[.,!?;:—])", text)
 
     # recombine sentences into chunks of desired length
     chunks = []
@@ -110,13 +112,13 @@ def main(
         chapter_name = os.path.splitext(chapter_name_ext)[0]
 
         text_path = os.path.join(path_to_text_files, f"{chapter_name}.txt")
-        audio_path = os.path.join(path_to_audio_files, f"{chapter_name}.wav")
+        wav_path = os.path.join(path_to_audio_files, f"{chapter_name}.wav")
 
         # read chapter
-        read_chapter(text_path, audio_path, voice_prompt_file)
+        read_chapter(text_path, wav_path, voice_prompt_file)
 
         # rvc audio
-        mp3_path = audio_path[:-4] + ".mp3"
+        mp3_path = os.path.join(path_to_audio_files, f"{chapter_name}.mp3")
         rvc_infer.rvc_convert(
             model_path=model_path,
             input_path=mp3_path,
