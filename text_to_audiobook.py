@@ -1,6 +1,7 @@
 import argparse
 import os
 import re
+import shutil
 
 import music_tag
 import scipy
@@ -127,6 +128,8 @@ def main(
 
         print(f"Done Processing Chapter {chapter_name}")
         chapter_num += 1
+
+    shutil.make_archive(book_title, "zip", path_to_audio_files)
 
 
 if __name__ == "__main__":
