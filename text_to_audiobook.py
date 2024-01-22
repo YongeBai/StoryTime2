@@ -119,7 +119,7 @@ def main(
         mp3_path = audio_path[:-4] + ".mp3"
         rvc_infer.rvc_convert(
             model_path=model_path,
-            input_path=audio_path,
+            input_path=mp3_path,
             output_dir_path=mp3_path,
         )
 
