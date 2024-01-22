@@ -80,7 +80,7 @@ def main():
     args = parser.parse_args()
 
     book_title = args.title
-    epub_path = os.path.join(os.getcwd(), f"{book_title}.epub")
+    epub_path = f"{book_title}.epub"
 
     book_path_folder = os.path.join(
         os.getcwd(),
