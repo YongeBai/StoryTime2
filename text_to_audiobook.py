@@ -58,14 +58,20 @@ def read_chapter(text_path: str, audio_path: str, voice_prompt_file: str):
         for i, text in enumerate(cleaned_text):
             # no clue how to combine the raw ints into one file properly, its making the voice higher pitch when im just using scipy to combine them
             # hacky solution is to save each chunk as a separate file and then combine them
+            audio_file = f"{i}.wav"
             tts.tts_to_file(
                 text=text,
                 language="en",
                 speaker_wav=voice_prompt_file,
                 split_sentences=False,
-                file_path=f"{i}.wav",
+                file_path=audio_file,
             )
-            all_audio.append(pydub.AudioSegment.from_wav(f"{i}.wav"))
+            rvc_infer.rvc_convert(
+                model_path=model_path,
+                input_path=audio_file,
+                output_dir_path=audio_file,
+            )
+            all_audio.append(pydub.AudioSegment.from_wav(audio_file))
 
     combined_audio = all_audio[0]
     for audio in all_audio[1:]:
@@ -116,14 +122,7 @@ def main(
 
         # read chapter
         read_chapter(text_path, wav_path, voice_prompt_file)
-
-        # rvc audio
         mp3_path = os.path.join(path_to_audio_files, f"{chapter_name}.mp3")
-        rvc_infer.rvc_convert(
-            model_path=model_path,
-            input_path=mp3_path,
-            output_dir_path=mp3_path,
-        )
 
         # process metadata
         process_metadata(mp3_path, book_title, chapter_num)
