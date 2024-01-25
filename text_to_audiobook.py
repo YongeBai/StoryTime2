@@ -36,7 +36,7 @@ def clean_text(text: str, target_len: int = 150) -> list[str]:
         if len(chunk) + len(sentence) > target_len:
             chunks.append(chunk)
             chunk = ""
-        chunk += sentence + " "
+        chunk += sentence
 
     if chunk:
         chunks.append(chunk)
