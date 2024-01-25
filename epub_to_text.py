@@ -8,65 +8,44 @@ from bs4 import BeautifulSoup
 from ebooklib import epub
 
 
-def get_book_dir(path: str) -> str:
-    return os.path.dirname(path)
-
-
-def get_epub_navigation(path: str) -> str:
+def get_epub_content(path: str) -> list[str]:
     book = ebooklib.epub.read_epub(path)
+    items = []
     for item in book.get_items():
-        if item.get_type() == ebooklib.ITEM_NAVIGATION:
-            return item.get_content().decode("utf-8")
+        if item.get_type() == ebooklib.ITEM_DOCUMENT:
+            items.append(item.get_content())
 
-
-def parse_navigation(nav: str) -> list:
-    soup = BeautifulSoup(nav, "xml")
-    nav_points = soup.find_all("navPoint")
-    chapters_title_and_content = []
-    for nav in nav_points:
-        chapter_name_html = nav.find("text")
-        chapter_name = re.search(r">(.*)<", str(chapter_name_html)).group(1)
-
-        chapters_title_and_content.append(
-            (chapter_name, nav.find("content").get("src"))
-        )
-
-    return chapters_title_and_content
-
-
-def extract_chapter_html(chapter_xhtml: str, book: epub.EpubBook) -> str:
-    href, fragment = chapter_xhtml.split("#")
-    chapter_item = book.get_item_with_href(href)
-
-    chapter_content = chapter_item.get_content().decode("utf-8")
-    soup = BeautifulSoup(chapter_content, "xml")
-
-    title = soup.find(id=fragment)
-    paragraphs = title.find_next_siblings("p")
-
-    text = " ".join([p.get_text() for p in paragraphs])
-    return text
+    return items
 
 
 def extract_chapters(book_path_folder, book_path):
-    book = ebooklib.epub.read_epub(book_path)
-    nav = get_epub_navigation(book_path)
-    chapters = parse_navigation(nav)
-
     # create folder for chapters text
     if not os.path.exists(f"{book_path_folder}/chapters_text"):
         os.makedirs(f"{book_path_folder}/chapters_text")
+        items = get_epub_content(book_path)
 
-        for chapter_name, chapter_content_xhtml in chapters:
-            text = extract_chapter_html(chapter_content_xhtml, book)
+        for item in items:
+            soup = BeautifulSoup(item, "xml")
 
-            if chapter_name[-1] == ".":  # remove trailing period if exists in chapter name
-                chapter_name = chapter_name[:-1]
+            chapter_div = soup.find("div", {"class": "chapter"})
+            if not chapter_div:
+                continue
 
-            file_name = os.path.join(book_path_folder,"chapters_text",f"{chapter_name}.txt")
+            h2_tag = chapter_div.find("h2")
+            if not h2_tag:
+                continue
+
+            chapter_name = h2_tag.get_text().strip(".")
+
+            file_name = os.path.join(
+                book_path_folder, "chapters_text", f"{chapter_name}.txt"
+            )
+
+            text = [para.get_text() for para in soup.find_all("p")]
+            text = "\n".join(text)
 
             with open(file_name, "w", encoding="utf-8") as f:
-                f.write(chapter_name + "\n")
+                f.write(chapter_name + ",\n")
                 f.write(text)
 
         print("Done Extracting Chapters")

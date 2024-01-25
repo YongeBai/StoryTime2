@@ -48,7 +48,7 @@ def clean_text(text: str, target_len: int = 150) -> list[str]:
     return chunks
 
 
-def read_chapter(text_path: str, audio_path: str, voice_prompt_file: str):
+def read_chapter(text_path: str, audio_path: str, voice_prompt_file: str, model_path: str):
     with open(text_path, "r", encoding="utf-8") as f:
         text = " ".join([l for l in f.readlines()])
 
@@ -65,6 +65,7 @@ def read_chapter(text_path: str, audio_path: str, voice_prompt_file: str):
                 speaker_wav=voice_prompt_file,
                 split_sentences=False,
                 file_path=audio_file,
+                speed=0.9,
             )
             rvc_infer.rvc_convert(
                 model_path=model_path,
@@ -121,7 +122,7 @@ def main(
         wav_path = os.path.join(path_to_audio_files, f"{chapter_name}.wav")
 
         # read chapter
-        read_chapter(text_path, wav_path, voice_prompt_file)
+        read_chapter(text_path, wav_path, voice_prompt_file, model_path)
         mp3_path = os.path.join(path_to_audio_files, f"{chapter_name}.mp3")
 
         # process metadata
