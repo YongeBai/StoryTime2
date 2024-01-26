@@ -24,14 +24,10 @@ def extract_chapters(book_path_folder, book_path):
         os.makedirs(f"{book_path_folder}/chapters_text")
         items = get_epub_content(book_path)
 
-        for item in items[:12]:
+        for item in items[:10]:
             soup = BeautifulSoup(item, "xml")
 
-            chapter_div = soup.find("div", {"class": "chapter"})
-            if not chapter_div:
-                continue
-
-            h2_tag = chapter_div.find("h2")
+            h2_tag = soup.find("h2")
             if not h2_tag:
                 continue
 
@@ -42,18 +38,24 @@ def extract_chapters(book_path_folder, book_path):
             # remove actual footnotes 
             for p in soup.find_all("p", {"class": "footnote"}):
                 p.decompose()
-
+                
             chapter_name = h2_tag.get_text().strip(".")
 
             file_name = os.path.join(
                 book_path_folder, "chapters_text", f"{chapter_name}.txt"
             )
 
-            text = [para.get_text() for para in soup.find_all("p")]
-            text = "\n".join(text)
+            elements = soup.find_all(['p', 'h2'])
+            text = []
+            for el in elements:
+                if el.name == 'p':
+                    text.append(el.get_text())
+                else: # add comma after headings
+                    text.append(el.get_text()+",\n")
+
+            text = '\n'.join(text)
 
             with open(file_name, "w", encoding="utf-8") as f:
-                f.write(chapter_name + ",\n")
                 f.write(text)
 
         print("Done Extracting Chapters")
