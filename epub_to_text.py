@@ -20,47 +20,49 @@ def get_epub_content(path: str) -> list[str]:
 
 def extract_chapters(book_path_folder, book_path):
     # create folder for chapters text
-    if not os.path.exists(f"{book_path_folder}/chapters_text"):
-        os.makedirs(f"{book_path_folder}/chapters_text")
-        items = get_epub_content(book_path)
-
-        for item in items[:10]:
-            soup = BeautifulSoup(item, "xml")
-
-            h2_tag = soup.find("h2")
-            if not h2_tag:
-                continue
-
-            # Find all a tags (normmally corresponds to footnotes) and remove them
-            for a in soup.find_all("a"):
-                a.decompose()
-
-            # remove actual footnotes 
-            for p in soup.find_all("p", {"class": "footnote"}):
-                p.decompose()
-                
-            chapter_name = h2_tag.get_text().strip(".")
-
-            file_name = os.path.join(
-                book_path_folder, "chapters_text", f"{chapter_name}.txt"
-            )
-
-            elements = soup.find_all(['p', 'h2'])
-            text = []
-            for el in elements:
-                if el.name == 'p':
-                    text.append(el.get_text())
-                else: # add comma after headings
-                    text.append(el.get_text()+",\n")
-
-            text = '\n'.join(text)
-
-            with open(file_name, "w", encoding="utf-8") as f:
-                f.write(text)
-
-        print("Done Extracting Chapters")
-    else:
+    if os.path.exists(f"{book_path_folder}/chapters_text"):
         print("Chapters already extracted")
+
+    
+    os.makedirs(f"{book_path_folder}/chapters_text")
+    items = get_epub_content(book_path)
+
+    for item in items:
+        soup = BeautifulSoup(item, "xml")
+
+        h2_tag = soup.find("h2")
+        if not h2_tag:
+            continue
+
+        # Find all a tags (normmally corresponds to footnotes) and remove them
+        for a in soup.find_all("a"):
+            a.decompose()
+
+        # remove actual footnotes 
+        for p in soup.find_all("p", {"class": "footnote"}):
+            p.decompose()
+            
+        chapter_name = h2_tag.get_text().strip(".")
+
+        file_name = os.path.join(
+            book_path_folder, "chapters_text", f"{chapter_name}.txt"
+        )
+
+        elements = soup.find_all(['p', 'h2'])
+        text = []
+        for el in elements:
+            if el.name == 'p':
+                text.append(el.get_text())
+            else: # add comma after headings
+                text.append(el.get_text()+",\n")
+
+        text = '\n'.join(text)
+
+        with open(file_name, "w", encoding="utf-8") as f:
+            f.write(text)
+
+    print("Done Extracting Chapters")
+        
 
 
 def main():
