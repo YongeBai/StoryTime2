@@ -17,7 +17,7 @@ tts = TTS("tts_models/multilingual/multi-dataset/xtts_v2")
 tts.to(device)
 
 
-def clean_text(text: str, target_len: int = 150) -> list[str]:
+def clean_text(text: str, target_len: int = 175) -> list[str]:
     # remove double new line, redundant whitespace, convert non-ascii quotes to ascii quotes
     text = re.sub(r"\n\n+", r"\n,", text)
     text = re.sub(r"\s+", r" ", text)
@@ -48,7 +48,9 @@ def clean_text(text: str, target_len: int = 150) -> list[str]:
     return chunks
 
 
-def read_chapter(text_path: str, audio_path: str, voice_prompt_file: str, model_path: str):
+def read_chapter(
+    text_path: str, audio_path: str, voice_prompt_file: str, model_path: str
+):
     with open(text_path, "r", encoding="utf-8") as f:
         text = " ".join([l for l in f.readlines()])
 
@@ -131,10 +133,9 @@ def main(
         print(f"Done Processing Chapter {chapter_name}")
         chapter_num += 1
 
-    # zip audio files
-    path_to_zip = os.path.join(path_to_audio_files, f"{book_title}_audiobook")
-    print(path_to_zip)
-    shutil.make_archive(path_to_zip, "zip", path_to_audio_files)
+    # zip audio files then change name
+    shutil.make_archive(path_to_audio_files, "zip", path_to_audio_files)
+    os.rename(path_to_audio_files + ".zip", book_title + ".zip")
 
 
 if __name__ == "__main__":
