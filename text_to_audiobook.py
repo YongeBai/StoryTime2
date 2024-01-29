@@ -132,7 +132,8 @@ def main(
         chapter_num += 1
 
     # zip audio files
-    path_to_zip = os.path.join(path_to_audio_files, book_title)
+    path_to_zip = os.path.join(path_to_audio_files, f"{book_title}_audiobook")
+    print(path_to_zip)
     shutil.make_archive(path_to_zip, "zip", path_to_audio_files)
 
 
