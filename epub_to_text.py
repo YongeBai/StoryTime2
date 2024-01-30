@@ -22,8 +22,8 @@ def extract_chapters(book_path_folder, book_path):
     # create folder for chapters text
     if os.path.exists(f"{book_path_folder}/chapters_text"):
         print("Chapters already extracted")
+        return
 
-    
     os.makedirs(f"{book_path_folder}/chapters_text")
     items = get_epub_content(book_path)
 
@@ -38,31 +38,30 @@ def extract_chapters(book_path_folder, book_path):
         for a in soup.find_all("a"):
             a.decompose()
 
-        # remove actual footnotes 
+        # remove actual footnotes
         for p in soup.find_all("p", {"class": "footnote"}):
             p.decompose()
-            
+
         chapter_name = h2_tag.get_text().strip(".")
 
         file_name = os.path.join(
             book_path_folder, "chapters_text", f"{chapter_name}.txt"
         )
 
-        elements = soup.find_all(['p', 'h2'])
+        elements = soup.find_all(["p", "h2"])
         text = []
         for el in elements:
-            if el.name == 'p':
+            if el.name == "p":
                 text.append(el.get_text())
-            else: # add comma after headings
-                text.append(el.get_text()+",\n")
+            else:  # add comma after headings
+                text.append(el.get_text() + ",\n")
 
-        text = '\n'.join(text)
+        text = "\n".join(text)
 
         with open(file_name, "w", encoding="utf-8") as f:
             f.write(text)
 
     print("Done Extracting Chapters")
-        
 
 
 def main():
