@@ -57,25 +57,46 @@ def read_chapter(
         cleaned_text = clean_text(text)
 
         all_audio = []
-        for i, text in enumerate(cleaned_text):
+        current_batch = []
+        batch_size = 100
+        for i, sentence in enumerate(cleaned_text):
             # no clue how to combine the raw ints into one file properly, its making the voice higher pitch when im just using scipy to combine them
             # hacky solution is to save each chunk as a separate file and then combine them
             audio_file = f"{i}.wav"
             tts.tts_to_file(
-                text=text,
+                text=sentence,
                 language="en",
                 speaker_wav=voice_prompt_file,
                 split_sentences=False,
-                file_path=audio_file,
-                speed=0.9,
+                file_path=audio_file
             )
-            rvc_infer.rvc_convert(
-                model_path=model_path,
-                input_path=audio_file,
-                output_dir_path=audio_file,
-            )
-            all_audio.append(pydub.AudioSegment.from_wav(audio_file))
 
+            current_batch.append(pydub.AudioSegment.from_wav(audio_file))
+        
+            # After processing every 100 sentences, run rvc_infer on the combined batch
+            if i % batch_size ==  0 or i == len(cleaned_text) -  1:
+                combined_batch_audio = current_batch[0]
+                for audio in current_batch[1:]:
+                    combined_batch_audio += audio
+
+                output_file = f"combined_{len(all_audio)}.wav"
+                combined_batch_audio.export(output_file, format="wav")
+                
+                # Run rvc_infer on the combined batch
+                rvc_infer.rvc_convert(
+                    model_path=model_path,
+                    input_path=output_file,
+                    output_dir_path=output_file,
+                )
+                
+                # Append the processed batch to the overall list
+                all_audio.append(pydub.AudioSegment.from_wav(output_file))
+                
+                # Clear the current batch
+                current_batch = []
+                os.remove(output_file)
+
+    
     combined_audio = all_audio[0]
     for audio in all_audio[1:]:
         combined_audio += audio
@@ -107,8 +128,9 @@ def main(
     path_to_audio_files,
     voice_prompt_file: str,
     model_path: str,
+    chapter_start: int,
 ):
-    chapter_num = 1
+    chapter_num = chapter_start
     files = os.listdir(path_to_text_files)
     files.sort(
         key=lambda file_name: os.path.getmtime(
@@ -136,6 +158,7 @@ def main(
     # zip audio files then change name
     shutil.make_archive(path_to_audio_files, "zip", path_to_audio_files)
     os.rename(path_to_audio_files + ".zip", book_title + ".zip")
+    
 
 
 if __name__ == "__main__":
@@ -143,12 +166,13 @@ if __name__ == "__main__":
     parser.add_argument("--title", type=str, required=True)
     # parser.add_argument("--author", type=str, default=None)
     parser.add_argument("--voice", type=str, default="lex_fridman")
-
+    parser.add_argument("--chapter", type=int, default=1)
     args = parser.parse_args()
 
     book_title = args.title
     # author = args.author
     voice = args.voice
+    chapter_start = args.chapter
 
     path_to_text_files = os.path.join(os.getcwd(), "books", book_title, "chapters_text")
     path_to_audio_files = os.path.join(
@@ -167,4 +191,5 @@ if __name__ == "__main__":
         path_to_audio_files,
         voice_prompt_file,
         model_path,
+        chapter_start,
     )
